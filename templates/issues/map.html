@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Map View - Issue Tracker{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+    #map { height: 600px; border-radius: 12px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Issue Map</h1>
+    <p class="text-gray-600 dark:text-gray-400">Interactive map showing all reported issues</p>
+</div>
+
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
+    <div class="flex items-center space-x-6 text-sm">
+        <div class="flex items-center">
+            <div class="w-4 h-4 bg-gray-500 rounded-full mr-2"></div>
+            <span class="text-gray-700 dark:text-gray-300">Pending</span>
+        </div>
+        <div class="flex items-center">
+            <div class="w-4 h-4 bg-blue-500 rounded-full mr-2"></div>
+            <span class="text-gray-700 dark:text-gray-300">Reviewed</span>
+        </div>
+        <div class="flex items-center">
+            <div class="w-4 h-4 bg-yellow-500 rounded-full mr-2"></div>
+            <span class="text-gray-700 dark:text-gray-300">In Progress</span>
+        </div>
+        <div class="flex items-center">
+            <div class="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
+            <span class="text-gray-700 dark:text-gray-300">Resolved</span>
+        </div>
+        <div class="flex items-center">
+            <div class="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
+            <span class="text-gray-700 dark:text-gray-300">Rejected</span>
+        </div>
+    </div>
+</div>
+
+<div id="map" class="shadow-lg"></div>
+
+<script>
+// Initialize map
+const map = L.map('map').setView([20.5937, 78.9629], 5); // India center
+
+// Add tile layer
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// Issue data
+const issues = {{ issues_data|safe }};
+
+// Color mapping for status
+const statusColors = {
+    'pending': '#6b7280',
+    'reviewed': '#3b82f6',
+    'assigned': '#8b5cf6',
+    'in_progress': '#eab308',
+    'resolved': '#22c55e',
+    'rejected': '#ef4444'
+};
+
+// Add markers
+issues.forEach(issue => {
+    const color = statusColors[issue.status] || '#6b7280';
+    
+    const marker = L.circleMarker([issue.lat, issue.lng], {
+        radius: 8,
+        fillColor: color,
+        color: '#fff',
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.8
+    }).addTo(map);
+    
+    // Popup content
+    const popupContent = `
+        <div class="p-2">
+            <h3 class="font-bold text-lg mb-2">${issue.title}</h3>
+            <p class="text-sm text-gray-600 mb-2"><strong>Category:</strong> ${issue.category}</p>
+            <p class="text-sm text-gray-600 mb-2"><strong>Status:</strong> ${issue.status}</p>
+            <p class="text-sm text-gray-600 mb-3"><strong>Address:</strong> ${issue.address}</p>
+            <a href="/issues/${issue.id}/" class="inline-block bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">
+                View Details
+            </a>
+        </div>
+    `;
+    
+    marker.bindPopup(popupContent);
+});
+
+// Fit bounds if there are issues
+if (issues.length > 0) {
+    const bounds = L.latLngBounds(issues.map(i => [i.lat, i.lng]));
+    map.fitBounds(bounds, { padding: [50, 50] });
+}
+</script>
+{% endblock %}
