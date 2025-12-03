@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Report Issue - Public Issue Tracker{% endblock %}
+
+{% block extra_head %}
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-8">Report an Issue</h1>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+        <form method="post" enctype="multipart/form-data" id="issue-form">
+            {% csrf_token %}
+            
+            <div class="mb-6">
+                <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Issue Title *</label>
+                {{ form.title }}
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Category *</label>
+                {{ form.category }}
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Description *</label>
+                {{ form.description }}
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Address *</label>
+                {{ form.address }}
+                <button type="button" onclick="getCurrentLocation()" class="mt-2 text-blue-600 hover:text-blue-700 text-sm">
+                    <i class="fas fa-location-arrow mr-1"></i>Use Current Location
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Latitude</label>
+                    {{ form.latitude }}
+                </div>
+                <div>
+                    <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Longitude</label>
+                    {{ form.longitude }}
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Photo (Before) *</label>
+                {{ form.photo_before }}
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Additional Photos</label>
+                {{ form.additional_photos }}
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Urgency Level *</label>
+                {{ form.urgency_level }}
+            </div>
+            
+            <div class="flex space-x-4">
+                <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                    <i class="fas fa-paper-plane mr-2"></i>Submit Issue
+                </button>
+                <a href="{% url 'home' %}" class="flex-1 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 rounded-lg font-semibold text-center hover:bg-gray-400 dark:hover:bg-gray-600 transition">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function getCurrentLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            document.getElementById('id_latitude').value = position.coords.latitude;
+            document.getElementById('id_longitude').value = position.coords.longitude;
+            
+            // Reverse geocode to get address
+            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${position.coords.latitude}&lon=${position.coords.longitude}&format=json`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('id_address').value = data.display_name;
+                });
+        });
+    } else {
+        alert('Geolocation is not supported by this browser.');
+    }
+}
+</script>
+{% endblock %}
