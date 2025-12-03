@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Resolved Issues Gallery - Issue Tracker{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Resolved Issues Gallery</h1>
+    <p class="text-gray-600 dark:text-gray-400">See the impact of community action - before and after</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    {% for item in issues_with_photos %}
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+        <div class="grid grid-cols-2">
+            <div class="relative">
+                <img src="{{ item.issue.photo_before.url }}" alt="Before" class="w-full h-48 object-cover">
+                <div class="absolute top-2 left-2 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                    Before
+                </div>
+            </div>
+            <div class="relative">
+                <img src="{{ item.after_photo.url }}" alt="After" class="w-full h-48 object-cover">
+                <div class="absolute top-2 right-2 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                    After
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-3">
+                <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-semibold rounded-full">
+                    {{ item.issue.get_category_display }}
+                </span>
+                <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                    <i class="fas fa-check mr-1"></i>Resolved
+                </span>
+            </div>
+            
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">{{ item.issue.title }}</h3>
+            
+            <div class="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                <p><i class="fas fa-map-marker-alt mr-2"></i>{{ item.issue.address|truncatewords:5 }}</p>
+                <p><i class="fas fa-calendar-check mr-2"></i>Resolved: {{ item.issue.resolved_at|date:"M d, Y" }}</p>
+                <p><i class="fas fa-clock mr-2"></i>Resolution time: {{ item.issue.resolution_time }} days</p>
+            </div>
+            
+            <a href="{% url 'issue_detail' item.issue.issue_id %}" class="block w-full text-center bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+                View Full Details
+            </a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-span-3 text-center py-12">
+        <i class="fas fa-images text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+        <p class="text-gray-500 dark:text-gray-400">No resolved issues with photos yet</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
