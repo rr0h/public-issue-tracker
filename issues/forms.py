@@ -7,7 +7,7 @@ class IssueCreateForm(forms.ModelForm):
     
     additional_photos = forms.FileField(
         required=False,
-        widget=forms.ClearableFileInput(attrs={'multiple': True}),
+        widget=forms.FileInput(attrs={'multiple': True}),
         help_text='Upload additional photos (optional)'
     )
     
