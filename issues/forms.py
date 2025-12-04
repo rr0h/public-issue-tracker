@@ -2,12 +2,31 @@ from django import forms
 from .models import Issue, IssueUpdate, Comment, IssuePhoto
 
 
+class MultipleFileInput(forms.ClearableFileInput):
+    """Custom widget for multiple file uploads"""
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    """Custom field for multiple file uploads"""
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = single_file_clean(data, initial)
+        return result
+
+
 class IssueCreateForm(forms.ModelForm):
     """Form for creating new issues"""
     
-    additional_photos = forms.FileField(
+    additional_photos = MultipleFileField(
         required=False,
-        widget=forms.FileInput(attrs={'multiple': True}),
         help_text='Upload additional photos (optional)'
     )
     
